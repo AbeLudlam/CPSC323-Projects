@@ -1,3 +1,8 @@
+//Made by: Abraham Ludlam, Qiyuan Liu, Elizabeth Nguyen
+//Uses regular expressions to scan an ini.file named text.ini.
+//For CPSC-323 Compilers
+//Made: July 14, 2017
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -14,8 +19,8 @@ IniFile::IniFile(string filename)
     ifstream inp;
     string line, current;
 
-    regex section_test("\\[(.*?)\\]");
-    regex value_test("(\\w+)(\\s*)=([^\\+]+(?!\\+{3}))");
+    regex section_test("\\[(.*?)\\]");           //Regular expression getting the section name
+    regex value_test("(\\w+)(\\s*)=([^\\+]+(?!\\+{3}))");  //Regular expression getting property name, then section off the trailing whitespace for the property name, and then get the property value.
     inp.open(filename.c_str(), ios::in);
     if (inp.is_open())
     {
@@ -24,21 +29,17 @@ IniFile::IniFile(string filename)
 	    if (line.length() > 0) //Ignore empty lines
 	    {
 		smatch result;
-		auto pos = line.find(';');      //Find the beginning of comments
-		if (pos != string::npos)         //Delete the comment if it exists in a line
-		{					
-			line.erase(pos);
-		}
+		regex comments ("(;|#).*$");      //Regex to section out comments
+		line = regex_replace(line, comments, "");   //Cut out comments from the line
 		if (regex_search(line, result, section_test))
 		{
-		    
 		    current = result[1]; //adds new section
 		    std::transform(current.begin(), current.end(), current.begin(), ::tolower); //Makes section name lowercase
 		} else if (regex_search(line, result, value_test)) {
 		    string hold = result[1];
 		    if(current == "")
 		    {
-			current = "global";
+			current = "global";    //Create a global section if its needed
 		    }
 		    std::transform(hold.begin(), hold.end(), hold.begin(), ::tolower);  //Makes property name lowercase
 		    mapIniFile[current][hold] = result[3]; //adds properties under section
